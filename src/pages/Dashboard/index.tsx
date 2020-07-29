@@ -39,31 +39,27 @@ const Dashboard: React.FC = () => {
 
       setFoods([...foods, response.data]);
     },
-    [],
+    [foods],
   );
-
-  // async function handleUpdateFood(
-  //   food: Omit<IFoodPlate, 'id' | 'available'>,
-  // ): Promise<void> {
-  //   // const findFoodIndex = foods.findIndex(foodItem => foodItem.id === food.id);
-  //   // await
-  // }
-
-  // async function handleDeleteFood(id: number): Promise<void> {
-  //   await api.delete(`foods/${id}`);
-
-  //   const updatedFoods = foods.filter(food => food.id !== id);
-
-  //   setFoods(updatedFoods);
-  // }
 
   const handleUpdateFood = useCallback(
     async (food: Omit<IFoodPlate, 'id' | 'available'>) => {
-      const updatedFood = { ...editingFood, ...food };
+      const findFoodIndex = foods.findIndex(
+        foodItem => foodItem.id === editingFood.id,
+      );
 
-      console.log(updatedFood);
+      const response = await api.put<IFoodPlate>(`foods/${editingFood.id}`, {
+        ...editingFood,
+        ...food,
+      });
+
+      const updatedFoods = foods;
+
+      updatedFoods[findFoodIndex] = response.data;
+
+      setFoods(updatedFoods);
     },
-    [],
+    [editingFood, foods],
   );
 
   const handleDeleteFood = useCallback(
@@ -87,6 +83,7 @@ const Dashboard: React.FC = () => {
 
   function handleEditFood(food: IFoodPlate): void {
     setEditingFood(food);
+    setEditModalOpen(!editModalOpen);
   }
 
   return (
