@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 import Header from '../../components/Header';
 
@@ -26,32 +26,56 @@ const Dashboard: React.FC = () => {
   const [editModalOpen, setEditModalOpen] = useState(false);
 
   useEffect(() => {
-    async function loadFoods(): Promise<void> {
-      // TODO LOAD FOODS
-    }
-
-    loadFoods();
+    api.get('foods').then(response => {
+      setFoods(response.data);
+    });
   }, []);
 
-  async function handleAddFood(
-    food: Omit<IFoodPlate, 'id' | 'available'>,
-  ): Promise<void> {
-    try {
-      // TODO ADD A NEW FOOD PLATE TO THE API
-    } catch (err) {
-      console.log(err);
-    }
-  }
+  const handleAddFood = useCallback(
+    async (food: Omit<IFoodPlate, 'id' | 'available'>) => {
+      const response = await api.post('foods', {
+        food,
+      });
 
-  async function handleUpdateFood(
-    food: Omit<IFoodPlate, 'id' | 'available'>,
-  ): Promise<void> {
-    // TODO UPDATE A FOOD PLATE ON THE API
-  }
+      setFoods([...foods, response.data]);
+    },
+    [],
+  );
 
-  async function handleDeleteFood(id: number): Promise<void> {
-    // TODO DELETE A FOOD PLATE FROM THE API
-  }
+  // async function handleUpdateFood(
+  //   food: Omit<IFoodPlate, 'id' | 'available'>,
+  // ): Promise<void> {
+  //   // const findFoodIndex = foods.findIndex(foodItem => foodItem.id === food.id);
+  //   // await
+  // }
+
+  // async function handleDeleteFood(id: number): Promise<void> {
+  //   await api.delete(`foods/${id}`);
+
+  //   const updatedFoods = foods.filter(food => food.id !== id);
+
+  //   setFoods(updatedFoods);
+  // }
+
+  const handleUpdateFood = useCallback(
+    async (food: Omit<IFoodPlate, 'id' | 'available'>) => {
+      const updatedFood = { ...editingFood, ...food };
+
+      console.log(updatedFood);
+    },
+    [],
+  );
+
+  const handleDeleteFood = useCallback(
+    async (id: number) => {
+      await api.delete(`foods/${id}`);
+
+      const updatedFoods = foods.filter(food => food.id !== id);
+
+      setFoods(updatedFoods);
+    },
+    [foods],
+  );
 
   function toggleModal(): void {
     setModalOpen(!modalOpen);
@@ -62,7 +86,7 @@ const Dashboard: React.FC = () => {
   }
 
   function handleEditFood(food: IFoodPlate): void {
-    // TODO SET THE CURRENT EDITING FOOD ID IN THE STATE
+    setEditingFood(food);
   }
 
   return (
